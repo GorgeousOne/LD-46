@@ -33,6 +33,7 @@ class Button {
 		pop();
 	}
 
+
 	onClick() {
 		console.log("no action assigned to this button");
 	}

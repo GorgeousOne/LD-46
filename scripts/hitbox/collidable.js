@@ -1,6 +1,6 @@
 class Collidable {
 
-	constructor(width, height, hasGravity = false, surfaceFriction = 1) {
+	constructor(width, height) {
 
 		this.pos = createVector();
 		this.hitbox = new Hitbox(width, height);
@@ -8,10 +8,7 @@ class Collidable {
 		this.velX = 0;
 		this.velY = 0;
 
-		this.hasGravity = hasGravity;
-		this.surfaceFriction = surfaceFriction;
-
-		this.isOnGround = false;
+		this.isSolid = true;
 	}
 
 	setPos(x, y) {
@@ -20,13 +17,7 @@ class Collidable {
 	}
 
 	updateX() {
-		//makes sure that it doesnt accidentally move away from others while not in motion
-		if (abs(this.velY) > 0.001) {
-			this.moveX(this.velX);
-
-			if (this.isOnGround)
-				this.velX *= 1 - this.lastGround.surfaceFriction;
-		}
+		this.moveX(this.velX);
 	}
 
 
@@ -34,6 +25,7 @@ class Collidable {
 
 		this.translateX(dx);
 		let otherCollidable = physicsHandler.getCollision(this);
+		this.velX = 0;
 
 		if (otherCollidable === undefined)
 			return dx;
@@ -42,20 +34,18 @@ class Collidable {
 		let intersection = otherCollidable.hitbox.getBoundX(-signX) - this.hitbox.getBoundX(signX);
 
 		this.translateX(intersection);
+		return dx + intersection;
 	}
 
 	updateY() {
-
-		if (abs(this.velY) > 0.001) {
-			this.isOnGround = false;
-			this.moveY(this.velY);
-		}
+		this.moveY(this.velY);
 	}
 
 	moveY(dy) {
 
 		this.translateY(dy);
 		let otherCollidable = physicsHandler.getCollision(this);
+		this.velY = 0;
 
 		if (otherCollidable === undefined)
 			return dy;
@@ -64,13 +54,6 @@ class Collidable {
 		let intersection = otherCollidable.hitbox.getBoundY(-signY) - this.hitbox.getBoundY(signY);
 
 		this.translateY(intersection);
-		this.velY = 0;
-
-		if (signY === 1) {
-			this.isOnGround = true;
-			this.lastGround = otherCollidable;
-		}
-
 		return dy + intersection;
 	}
 
