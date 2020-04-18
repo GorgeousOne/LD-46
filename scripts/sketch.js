@@ -10,6 +10,7 @@ let camera;
 const startTime = Date.now();
 
 let bam;
+let level1;
 
 function preload() {
 
@@ -18,10 +19,9 @@ function preload() {
 	spriteHandler.loadImage('buddy','assets/buddy.png');
 
 	spriteHandler.loadImage('path', 'assets/path.png');
-	spriteHandler.loadImage('forest', 'assets/forest.png');
-	spriteHandler.loadImage('forest-front', 'assets/forest-front.png');
-	spriteHandler.loadImage('forest-back', 'assets/forest-back.png');
+	spriteHandler.loadImage('forest', 'assets/forest-tiles.png');
 
+	level1 = loadStrings('levels/level1.txt');
 }
 
 function setup() {
@@ -35,16 +35,22 @@ function setup() {
 	player = new Player(20, 20);
 	player.setTexture(spriteHandler.getImage('buddy'));
 
-	stage = new Stage(10, 10, 100);
-	stage.addTex(spriteHandler.getImage('path'), TileType.PATH);
-	stage.addTex(spriteHandler.getImage('forest'), TileType.FOREST);
-	stage.addTex(spriteHandler.getImage('forest-front'), TileType.FOREST_FRONT);
-	stage.addTex(spriteHandler.getImage('forest-back'), TileType.FOREST_BACK);
+	let forest = spriteHandler.getImage('forest');
+	stage = new Stage(level1);
+	stage.addTex(TileType.PATH, spriteHandler.getImage('path'));
+	stage.addTex(TileType.FOREST_BACK_LEFT, forest.get(0, 0, 100, 100));
+	stage.addTex(TileType.FOREST_BACK_MID, forest.get(100, 0, 100, 100));
+	stage.addTex(TileType.FOREST_BACK_RIGHT, forest.get(200, 0, 100, 100));
+	stage.addTex(TileType.FOREST_LEFT, forest.get(0, 100, 100, 100));
+	stage.addTex(TileType.FOREST, forest.get(100, 100, 100, 100));
+	stage.addTex(TileType.FOREST_RIGHT, forest.get(200, 100, 100, 100));
+	stage.addTex(TileType.FOREST_FRONT_LEFT, forest.get(0, 200, 100, 100));
+	stage.addTex(TileType.FOREST_FRONT_MID, forest.get(100, 200, 100, 100));
+	stage.addTex(TileType.FOREST_FRONT_RIGHT, forest.get(200, 200, 100, 100));
+
 
 	physicsHandler = new PhysicsHandler();
 	physicsHandler.addCollidable(player);
-	// physicsHandler.addCollidable(new Ledge(createVector(400, 350), 100, 10));
-	// physicsHandler.addCollidable(new Ledge(createVector(200, 455), 700, 10));
 
 	camera = new Camera(player);
 	camera.followTargetX = true;
@@ -73,6 +79,8 @@ function draw() {
 
 	push();
 	camera.focus();
+
+	image(spriteHandler.getImage('forest'), 0, 0);
 
 	stage.display();
 	physicsHandler.collidables.forEach(collidable => collidable.hitbox.display());

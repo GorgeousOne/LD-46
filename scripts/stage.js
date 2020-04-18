@@ -1,49 +1,42 @@
 class Stage {
 
-	constructor(tilesX, tilesY, tileSize) {
-		this.tilesX = tilesX;
-		this.tilesY = tilesY;
-		this.tilesSize = tileSize;
+	constructor(tileStrings) {
 
-		this.tilesTexs = new Map();
+		this.tileTexs = new Map();
 		this.tiles = [];
 
-		for(let x = 0; x < tilesX; x++) {
+		for (let y = 0; y < tileStrings.length; y++) {
+			let line = tileStrings[y];
 
-			let row = [];
-			this.tiles.push(row);
+			for (let x = 0; x < line.length; x++) {
 
-			for(let y = 0; y < tilesY; y++) {
+				if(y === 0)
+					this.tiles.push([]);
 
-				switch (y) {
-					case 0:
-						row.push(TileType.FOREST_BACK);
-						break;
-					case 1:
-						row.push(TileType.FOREST);
-						break;
-					case 2:
-						row.push(TileType.FOREST_FRONT);
-						break;
-					default:
-						row.push(TileType.PATH);
-						break;
-				}
+				this.tiles[x].push(parseInt(line.charAt(x)));
 			}
 		}
 	}
 
-	addTex(texture, tileType) {
-		this.tilesTexs.set(tileType, texture);
+	addTex(tileType, texture) {
+
+		this.tileTexs.set(tileType, texture);
+		console.log(tileType);
 	}
 
 	display() {
 
-		for(let x = 0; x < this.tilesX; x++) {
-			for(let y = 0; y < this.tilesY; y++) {
+		for(let x = 0; x < this.tiles.length; x++) {
+			for(let y = 0; y < this.tiles[0].length; y++) {
 
-				let tex = this.tilesTexs.get(this.tiles[x][y]);
-				image(tex, x * this.tilesSize, y * this.tilesSize);
+				let tex = this.tileTexs.get(this.tiles[x][y]);
+				//console.log(this.tiles[x][y]);
+
+				if(!tex)
+					console.log(x + ", " + y + ", " + this.tiles[x][y] + " tex is missing");
+
+				if(tex)
+					image(tex, x * tex.width, y * tex.height);
 			}
 		}
 
