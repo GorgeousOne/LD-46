@@ -16,7 +16,7 @@ function preload() {
 
 	spriteHandler = new SpriteHandler();
 	spriteHandler.loadImage('font', 'scripts/dialog/pixel-font.min.png');
-	spriteHandler.loadImage('buddy','assets/buddy.png');
+	spriteHandler.loadImage('buddy','assets/buddy2.png');
 
 	spriteHandler.loadImage('path', 'assets/path.png');
 	spriteHandler.loadImage('forest', 'assets/forest-tiles.png');
@@ -28,32 +28,33 @@ function setup() {
 
 	createCanvas(windowWidth, windowHeight, P2D);
 	fullscreen();
+	noSmooth();
 
 	loadLetters(spriteHandler.getImage('font'));
 	physicsHandler = new PhysicsHandler();
 
-	player = new Player(20, 20);
-	player.setTexture(spriteHandler.getImage('buddy'));
-	player.setPos(200, 200)
+	player = new Player(spriteHandler.getImage('buddy'), 0.125);
+	player.setPos(200, 200);
 	physicsHandler.addCollidable(player);
 
 	let forest = spriteHandler.getImage('forest');
 	stage = new Stage(level1, 100);
 	stage.addTex(TileType.PATH, spriteHandler.getImage('path'));
-	stage.addTex(TileType.FOREST_BACK_LEFT, forest.get(0, 0, 100, 100));
-	stage.addTex(TileType.FOREST_BACK_MID, forest.get(100, 0, 100, 100));
-	stage.addTex(TileType.FOREST_BACK_RIGHT, forest.get(200, 0, 100, 100));
-	stage.addTex(TileType.FOREST_LEFT, forest.get(0, 100, 100, 100));
-	stage.addTex(TileType.FOREST, forest.get(100, 100, 100, 100));
-	stage.addTex(TileType.FOREST_RIGHT, forest.get(200, 100, 100, 100));
-	stage.addTex(TileType.FOREST_FRONT_LEFT, forest.get(0, 200, 100, 100));
-	stage.addTex(TileType.FOREST_FRONT_MID, forest.get(100, 200, 100, 100));
-	stage.addTex(TileType.FOREST_FRONT_RIGHT, forest.get(200, 200, 100, 100));
+	stage.addTex(TileType.FOREST_BACK_LEFT, forest.get(0, 0, 100, 100), new Hitbox(25, 25, 75, 75));
+	stage.addTex(TileType.FOREST_BACK_MID, forest.get(100, 0, 100, 100), new Hitbox(0, 25, 100, 75));
+	stage.addTex(TileType.FOREST_BACK_RIGHT, forest.get(200, 0, 100, 100), new Hitbox(0, 25, 75, 75));
+	stage.addTex(TileType.FOREST_LEFT, forest.get(0, 100, 100, 100), new Hitbox(25, 0, 75, 100));
+	stage.addTex(TileType.FOREST, forest.get(100, 100, 100, 100), new Hitbox(0, 0, 100, 100));
+	stage.addTex(TileType.FOREST_RIGHT, forest.get(200, 100, 100, 100), new Hitbox(0, 0, 75, 100));
+	stage.addTex(TileType.FOREST_FRONT_LEFT, forest.get(0, 200, 100, 100), new Hitbox(25, 0, 75, 75));
+	stage.addTex(TileType.FOREST_FRONT_MID, forest.get(100, 200, 100, 100), new Hitbox(0, 0, 100, 75));
+	stage.addTex(TileType.FOREST_FRONT_RIGHT, forest.get(200, 200, 100, 100), new Hitbox(0, 0, 75, 75));
+	stage.loadHitboxes();
 
 	camera = new Camera(player);
 	camera.followTargetX = true;
 	camera.followTargetY = true;
-	camera.zoom = 1;
+	camera.zoom = 3;
 }
 
 function drawTime() {
@@ -78,10 +79,13 @@ function draw() {
 	push();
 	camera.focus();
 
+	noSmooth();
 	stage.display();
 	physicsHandler.collidables.forEach(collidable => collidable.hitbox.display());
 
+	smooth();
 	player.display();
+
 	pop();
 
 	//drawTime();

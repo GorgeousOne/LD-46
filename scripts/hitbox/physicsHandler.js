@@ -1,4 +1,4 @@
-const speed = 3;
+const speed = 1.75;
 
 class PhysicsHandler {
 
