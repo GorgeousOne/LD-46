@@ -1,8 +1,8 @@
 class Hitbox {
 
-	constructor(width, height) {
+	constructor(x, y, width, height) {
 
-		this.pos = createVector();
+		this.pos = createVector(x, y);
 		this.width = width;
 		this.height = height;
 	}
@@ -13,10 +13,6 @@ class Hitbox {
 	}
 
 	setPos(x, y) {
-
-		if (!this.pos)
-			this.pos = createVector();
-
 		this.pos.set(x, y);
 	}
 

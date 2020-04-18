@@ -1,9 +1,9 @@
 class Collidable {
 
-	constructor(width, height) {
+	constructor(x, y, width, height) {
 
-		this.pos = createVector();
-		this.hitbox = new Hitbox(width, height);
+		this.pos = createVector(x, y);
+		this.hitbox = new Hitbox(x, y, width, height);
 
 		this.velX = 0;
 		this.velY = 0;

@@ -1,7 +1,7 @@
 class Player extends Collidable {
 
 	constructor(width, height) {
-		super(width, height);
+		super(0, 0, width, height);
 
 		this.isWalking = false;
 		this.isTalking = false;
@@ -27,7 +27,7 @@ class Player extends Collidable {
 			return;
 
 		translate(this.pos.x + this.hitbox.width / 2, this.pos.y + this.hitbox.height / 2);
-
+		scale(0.5);
 
 		if (this.isMirrored)
 			scale(-1, 1);

@@ -28,15 +28,17 @@ function setup() {
 
 	createCanvas(windowWidth, windowHeight, P2D);
 	fullscreen();
-	//noSmooth();
 
 	loadLetters(spriteHandler.getImage('font'));
+	physicsHandler = new PhysicsHandler();
 
 	player = new Player(20, 20);
 	player.setTexture(spriteHandler.getImage('buddy'));
+	player.setPos(200, 200)
+	physicsHandler.addCollidable(player);
 
 	let forest = spriteHandler.getImage('forest');
-	stage = new Stage(level1);
+	stage = new Stage(level1, 100);
 	stage.addTex(TileType.PATH, spriteHandler.getImage('path'));
 	stage.addTex(TileType.FOREST_BACK_LEFT, forest.get(0, 0, 100, 100));
 	stage.addTex(TileType.FOREST_BACK_MID, forest.get(100, 0, 100, 100));
@@ -47,10 +49,6 @@ function setup() {
 	stage.addTex(TileType.FOREST_FRONT_LEFT, forest.get(0, 200, 100, 100));
 	stage.addTex(TileType.FOREST_FRONT_MID, forest.get(100, 200, 100, 100));
 	stage.addTex(TileType.FOREST_FRONT_RIGHT, forest.get(200, 200, 100, 100));
-
-
-	physicsHandler = new PhysicsHandler();
-	physicsHandler.addCollidable(player);
 
 	camera = new Camera(player);
 	camera.followTargetX = true;
@@ -79,8 +77,6 @@ function draw() {
 
 	push();
 	camera.focus();
-
-	image(spriteHandler.getImage('forest'), 0, 0);
 
 	stage.display();
 	physicsHandler.collidables.forEach(collidable => collidable.hitbox.display());

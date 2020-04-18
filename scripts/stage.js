@@ -1,6 +1,6 @@
 class Stage {
 
-	constructor(tileStrings) {
+	constructor(tileStrings, tileSize) {
 
 		this.tileTexs = new Map();
 		this.tiles = [];
@@ -13,15 +13,22 @@ class Stage {
 				if(y === 0)
 					this.tiles.push([]);
 
-				this.tiles[x].push(parseInt(line.charAt(x)));
+				let tileID = parseInt(line.charAt(x));
+				this.tiles[x].push(tileID);
+
+				if(tileID !== 0) {
+					physicsHandler.addCollidable(new Collidable(
+						x*tileSize,
+						y*tileSize,
+						tileSize,
+						tileSize));
+				}
 			}
 		}
 	}
 
 	addTex(tileType, texture) {
-
 		this.tileTexs.set(tileType, texture);
-		console.log(tileType);
 	}
 
 	display() {
@@ -30,16 +37,8 @@ class Stage {
 			for(let y = 0; y < this.tiles[0].length; y++) {
 
 				let tex = this.tileTexs.get(this.tiles[x][y]);
-				//console.log(this.tiles[x][y]);
-
-				if(!tex)
-					console.log(x + ", " + y + ", " + this.tiles[x][y] + " tex is missing");
-
-				if(tex)
-					image(tex, x * tex.width, y * tex.height);
+				image(tex, x * tex.width, y * tex.height);
 			}
 		}
-
-		//image(this.texture, 0, 0);
 	}
 }
