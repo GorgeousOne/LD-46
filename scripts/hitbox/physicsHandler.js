@@ -1,4 +1,5 @@
-const speed = 1.75;
+// const speed = 1.75;
+const speed = 5.75;
 
 class PhysicsHandler {
 
@@ -10,9 +11,16 @@ class PhysicsHandler {
 		this.collidables.push(collidable);
 	}
 
-	applyPhysics() {
+	removeCollidable(collidable) {
+		for(let i = 0; i < this.collidables.length; i++) {
+			if (this.collidables[i] === collidable) {
+				this.collidables.splice(i, 1);
+				return;
+			}
+		}
+	}
 
-		this.movePlayer();
+	applyPhysics() {
 
 		for (let collidable of this.collidables) {
 			collidable.updateX();
@@ -29,29 +37,6 @@ class PhysicsHandler {
 
 			if (collidable.hitbox.intersects(other.hitbox))
 				return other;
-		}
-	}
-
-	movePlayer() {
-
-		if(player.isTalking)
-			return;
-
-		if (keyIsDown(LEFT_ARROW))
-			player.velX -= speed;
-
-		if (keyIsDown(RIGHT_ARROW))
-			player.velX += speed;
-
-		if (keyIsDown(UP_ARROW))
-			player.velY -= speed;
-
-		if (keyIsDown(DOWN_ARROW))
-			player.velY += speed;
-
-		if(player.velX !== 0 && player.velY !== 0) {
-			player.velX /= sqrt(2);
-			player.velY /= sqrt(2);
 		}
 	}
 }

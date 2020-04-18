@@ -3,6 +3,7 @@ class Dialog {
 
 	constructor(text, linesPerBubble = -1, width = 100, fontSize = 1) {
 
+		this.pos = createVector();
 		this.linesPerBubble = linesPerBubble;
 		this.fontSize = fontSize;
 
@@ -20,12 +21,18 @@ class Dialog {
 			(this.textLines.length - 1) * this.lineSpacing +
 			2 * this.paddingY;
 
+		this.isUiLevel = false;
 		this.reset();
+	}
+
+	setPos(x, y) {
+		this.pos.set(x, y);
 	}
 
 	reset() {
 		this.lineIterator = -this.linesPerBubble;
 		this.hasEnded = false;
+		this.loadNextBubble();
 	}
 
 	loadNextBubble() {
@@ -50,13 +57,12 @@ class Dialog {
 		this.currentBubble = new TextBubble(paragraphLines, this.width, this.fontSize, this.textColor, this.bgColor, this.paddingX, this.paddingY, this.lineSpacing);
 	}
 
-	display(pos) {
+	display() {
 
 		push();
-		translate(pos.x, pos.y);
-		scale(1 / camera.zoom);
-
-		this.currentBubble.display(createVector(-this.width/2, -this.height));
+		noSmooth();
+		//translate(this.pos.x, this.pos.y);
+		this.currentBubble.display(this.pos.x, this.pos.y);
 		pop();
 	}
 

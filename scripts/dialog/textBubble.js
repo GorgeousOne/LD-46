@@ -23,7 +23,7 @@ class TextBubble {
 			this.createTextGraphic();
 	}
 
-	display(pos) {
+	display(x, y) {
 
 		if (LetterImages.size === 0)
 			return;
@@ -35,8 +35,8 @@ class TextBubble {
 		stroke(this.textColor);
 		strokeWeight(this.fontSize);
 
-		rect(pos.x, pos.y, this.width, this.height);
-		image(this.textGraphic, pos.x + this.paddingX-1, pos.y + this.paddingY-1);
+		rect(x, y, this.width, this.height);
+		image(this.textGraphic, x + this.paddingX-1, y + this.paddingY-1);
 	}
 
 	createTextGraphic() {

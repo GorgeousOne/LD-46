@@ -9,8 +9,10 @@ let camera;
 
 const startTime = Date.now();
 
-let bam;
 let level1;
+let activeDialog;
+
+let cryTrigger;
 
 function preload() {
 
@@ -34,8 +36,13 @@ function setup() {
 	physicsHandler = new PhysicsHandler();
 
 	player = new Player(spriteHandler.getImage('buddy'), 0.125);
-	player.setPos(200, 200);
+	player.setPos(250, 750);
 	physicsHandler.addCollidable(player);
+
+	camera = new Camera(player);
+	camera.followTargetX = true;
+	camera.followTargetY = true;
+	camera.zoom = 3;
 
 	let forest = spriteHandler.getImage('forest');
 	stage = new Stage(level1, 100);
@@ -51,10 +58,17 @@ function setup() {
 	stage.addTex(TileType.FOREST_FRONT_RIGHT, forest.get(200, 200, 100, 100), new Hitbox(0, 0, 75, 75));
 	stage.loadHitboxes();
 
-	camera = new Camera(player);
-	camera.followTargetX = true;
-	camera.followTargetY = true;
-	camera.zoom = 3;
+	cryTrigger = new Collidable(800, 400, 10, 200);
+
+	cryTrigger.onCollide = function () {
+		activeDialog = new Dialog("WAAAAAAH!", 1, 100, 2);
+		activeDialog.setPos(880, 500);
+		console.log(activeDialog.pos)
+		console.log(activeDialog.currentBubble.width);
+		physicsHandler.removeCollidable(cryTrigger);
+	};
+
+	physicsHandler.addCollidable(cryTrigger);
 }
 
 function drawTime() {
@@ -72,6 +86,7 @@ function drawTime() {
 
 function draw() {
 
+	movePlayer();
 	physicsHandler.applyPhysics();
 
 	background(0);
@@ -86,9 +101,14 @@ function draw() {
 	smooth();
 	player.display();
 
+	if(activeDialog && !activeDialog.isUiLevel)
+		activeDialog.display();
+
 	pop();
 
-	//drawTime();
+	if(activeDialog && activeDialog.isUiLevel)
+		activeDialog.display();
+		// activeDialog.display(700, 700);
 
 	// if (npcTalkingTo && !npcTalkingTo.hitbox.intersects(player.hitbox)) {
 	// 	npcTalkingTo.stopTalking();
@@ -114,22 +134,47 @@ function mouseMoved() {
 	// ui.onMouseMove();
 }
 
-// function keyPressed() {
-//
-// 	if (key !== 'e')
-// 		return;
-//
-// 	if (npcTalkingTo) {
-// 		npcTalkingTo.talk();
-// 		return;
-// 	}
-//
-// 	for (let npc of npcs) {
-// 		if (npc.hitbox.intersects(player.hitbox)) {
-//
-// 			if(npc.talk()) {
-// 				// npcTalkingTo = npc;
-// 			}
-// 		}
-// 	}
-// }
+function movePlayer() {
+
+	if(activeDialog)
+		return;
+
+	if (keyIsDown(65) || keyIsDown(LEFT_ARROW))
+		player.velX -= speed;
+
+	if (keyIsDown(68) || keyIsDown(RIGHT_ARROW))
+		player.velX += speed;
+
+	if (keyIsDown(87) || keyIsDown(UP_ARROW))
+		player.velY -= speed;
+
+	if (keyIsDown(83) || keyIsDown(DOWN_ARROW))
+		player.velY += speed;
+
+	if(player.velX !== 0 && player.velY !== 0) {
+		player.velX /= sqrt(2);
+		player.velY /= sqrt(2);
+	}
+}
+
+function keyPressed() {
+
+	if (key !== 'e')
+		return;
+
+	if (activeDialog) {
+
+		console.log("next bubble")
+		activeDialog.loadNextBubble();
+
+		if(activeDialog.hasEnded) {
+			console.log("end");
+			activeDialog = undefined;
+		}
+	}
+}
+
+function changeLevel() {
+
+
+}

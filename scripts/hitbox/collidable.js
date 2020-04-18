@@ -30,11 +30,17 @@ class Collidable {
 		if (otherCollidable === undefined)
 			return dx;
 
-		let signX = signum(dx);
-		let intersection = otherCollidable.hitbox.getBoundX(-signX) - this.hitbox.getBoundX(signX);
+		this.onCollide();
+		otherCollidable.onCollide();
 
-		this.translateX(intersection);
-		return dx + intersection;
+		if(otherCollidable.isSolid) {
+			let signX = signum(dx);
+			let intersection = otherCollidable.hitbox.getBoundX(-signX) - this.hitbox.getBoundX(signX);
+
+			this.translateX(intersection);
+			return dx + intersection;
+		}else
+			return dx;
 	}
 
 	updateY() {
@@ -50,11 +56,18 @@ class Collidable {
 		if (otherCollidable === undefined)
 			return dy;
 
-		let signY = signum(dy);
-		let intersection = otherCollidable.hitbox.getBoundY(-signY) - this.hitbox.getBoundY(signY);
+		this.onCollide();
+		otherCollidable.onCollide();
 
-		this.translateY(intersection);
-		return dy + intersection;
+		if(otherCollidable.isSolid) {
+			let signY = signum(dy);
+			let intersection = otherCollidable.hitbox.getBoundY(-signY) - this.hitbox.getBoundY(signY);
+
+			this.translateY(intersection);
+			this.onCollide();
+			return dy + intersection;
+		}else
+			return dy;
 	}
 
 	translateX(dx) {
@@ -66,4 +79,6 @@ class Collidable {
 		this.pos.add(0, dy);
 		this.hitbox.move(0, dy);
 	}
+
+	onCollide() {}
 }
