@@ -16,8 +16,8 @@ class Player extends Collidable {
 
 	updateX() {
 		if(this.velX !== 0)
-			this.isMirrored = this.velX > 0;
-		
+			this.isMirrored = this.velX < 0;
+
 		super.updateX();
 	}
 
@@ -32,8 +32,8 @@ class Player extends Collidable {
 		if (this.isMirrored)
 			scale(-1, 1);
 
-		let tex = this.sprite.getFrame(this.isWalking ? Date.now() - startTime : 0);
-		image(tex, -tex.width / 2, -tex.height / 2);
+		// let tex = this.sprite.getFrame(this.isWalking ? Date.now() - startTime : 0);
+		image(this.sprite, -this.sprite.width / 2, -this.sprite.height / 2);
 
 		if (this.isMirrored)
 			scale(-1, 1);

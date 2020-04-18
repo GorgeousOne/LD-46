@@ -54,8 +54,6 @@ class Camera {
 			return;
 		}
 
-		// let currentStrength = (1 - (timeSinceStart / this.shakeDuration)) * this.shakeStrength;
-
 		let currentStrength = (1 - (timeSinceStart / this.shakeDuration));
 		currentStrength *= currentStrength * this.shakeStrength;
 		translate(random(-currentStrength, currentStrength), random(-currentStrength, currentStrength));

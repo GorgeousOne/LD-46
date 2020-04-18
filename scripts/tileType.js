@@ -1,0 +1,8 @@
+const TileType = {
+	PATH: 1,
+	FOREST: 2,
+	FOREST_FRONT: 3,
+	FOREST_BACK: 4,
+	FOREST_LEFT: 5,
+	FOREST_RIGHT: 6
+};
