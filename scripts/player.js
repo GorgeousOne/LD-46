@@ -39,12 +39,7 @@ class Player extends Collidable {
 		if (this.isMirrored)
 			scale(-1, 1);
 
-		// let tex = this.texture.getFrame(this.isWalking ? Date.now() - startTime : 0);
-
 		image(this.texture, -this.texture.width/2, -this.texture.height/2);
-
-		if (this.isMirrored)
-			scale(-1, 1);
 
 		pop();
 		this.isWalking = false;

@@ -30,10 +30,8 @@ class Dialog {
 	}
 
 	placeAboveHead(player) {
-		let newPos = player.pos.copy().sub(player.width/2, player.height/2);
+		let newPos = player.pos.copy().sub(0, player.height/2);
 		newPos.sub(this.width/2, this.height);
-
-		console.log(this.height);
 
 		this.setPos(newPos.x, newPos.y);
 	}

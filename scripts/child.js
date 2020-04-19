@@ -4,10 +4,10 @@ class Child extends Collidable{
 	constructor(texture, size) {
 		super(0, 0, texture.width*size*thin, texture.width*size*thin);
 
+		this.texture = texture;
 		this.width = texture.width * size;
 		this.height = texture.height * size;
 
-		this.texture = texture;
 		this.isMirrored = false;
 		this.size = size;
 
@@ -43,10 +43,6 @@ class Child extends Collidable{
 			scale(-1, 1);
 
 		image(this.texture, -this.texture.width/2, -this.texture.height/2);
-
-		if (this.isMirrored)
-			scale(-1, 1);
-
 		pop();
 	}
 
