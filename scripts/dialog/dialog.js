@@ -37,9 +37,8 @@ class Dialog {
 	}
 
 	reset() {
-		this.lineIterator = -this.linesPerBubble;
+		this.lineIterator = 0;
 		this.hasEnded = false;
-		this.loadNextBubble();
 	}
 
 	setCallback(callback) {
@@ -50,8 +49,7 @@ class Dialog {
 
 		let paragraphLines;
 
-		if(this.currentBubble && ((this.linesPerBubble < 1 || this.lineIterator >= this.textLines.length-1))) {
-
+		if(this.currentBubble && this.lineIterator >= this.textLines.length-1) {
 			this.hasEnded = true;
 
 			if(this.callback)
@@ -60,23 +58,21 @@ class Dialog {
 			return;
 		}
 
-		if(this.linesPerBubble < 1) {
-			paragraphLines = this.textLines;
+		let lastLineInParagraph = this.lineIterator + this.linesPerBubble;
 
-		}else {
-			this.lineIterator += this.linesPerBubble;
-			let lastLineInParagraph = this.lineIterator + this.linesPerBubble;
+		if(lastLineInParagraph >= this.textLines.length)
+			lastLineInParagraph = min(lastLineInParagraph, this.textLines.length);
 
-			if(lastLineInParagraph >= this.textLines.length)
-				lastLineInParagraph = min(lastLineInParagraph, this.textLines.length);
-
-			paragraphLines = this.textLines.slice(this.lineIterator, lastLineInParagraph);
-		}
+		paragraphLines = this.textLines.slice(this.lineIterator, lastLineInParagraph);
+		this.lineIterator = lastLineInParagraph;
 
 		this.currentBubble = new TextBubble(paragraphLines, this.width, this.fontSize, this.textColor, this.bgColor, this.paddingX, this.paddingY, this.lineSpacing);
 	}
 
 	display() {
+
+		if(!this.currentBubble)
+			this.loadNextBubble();
 
 		push();
 		noSmooth();

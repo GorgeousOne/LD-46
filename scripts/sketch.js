@@ -29,24 +29,23 @@ function preload() {
 
 	spriteHandler = new SpriteHandler();
 	spriteHandler.loadImage('font', 'scripts/dialog/pixel-font.min.png');
+
 	spriteHandler.loadImage('buddy','assets/buddy.png');
 	spriteHandler.loadImage('fighter-buddy','assets/fighter-buddy.png');
-	spriteHandler.loadImage('child-sobbing','assets/child-sobbing.png');
 	spriteHandler.loadImage('child','assets/child.png');
-	spriteHandler.loadImage('campfire','assets/campfire.png');
-	spriteHandler.loadImage('campfire-lit','assets/campfire-lit.png');
-	spriteHandler.loadImage('monster','assets/monster.png');
-
+	spriteHandler.loadImage('child-sobbing','assets/child-sobbing.png');
 
 	spriteHandler.loadImage('path', 'assets/path.png');
 	spriteHandler.loadImage('forest', 'assets/forest-tiles.png');
 
-	levels = [];
+	spriteHandler.loadImage('campfire','assets/campfire.png');
+	spriteHandler.loadImage('campfire-lit','assets/campfire-lit.png');
+	spriteHandler.loadImage('monster','assets/monster.png');
 
+	levels = [];
 	levels.push(loadStrings('levels/level1.txt'));
 	levels.push(loadStrings('levels/level2.txt'));
 	levels.push(loadStrings('levels/level3.txt'));
-
 }
 
 function setup() {
@@ -89,8 +88,8 @@ function setup() {
 	physicsHandler.addCollidable(mapLeaveBlock);
 	physicsHandler.addCollidable(nextLevelTrigger);
 
+	createNightImg();
 	changeLevel();
-
 }
 
 function drawTime() {
@@ -123,7 +122,7 @@ function draw() {
 	player.display();
 
 
-	if(activeDialog && !activeDialog.isUiLevel)
+	if(activeDialog && !activeDialog.isUiLevel && !isNight)
 		activeDialog.display();
 
 	pop();
@@ -134,8 +133,24 @@ function draw() {
 
 	}else if(isNight) {
 		image(nightShadow, 0, 0);
-		console.log('its night')
+
+		if(monsters) {
+			push();
+			camera.focus();
+			smooth();
+			monsters.forEach(monster => monster.display());
+			pop();
+		}
 	}
+
+	if(activeDialog && !activeDialog.isUiLevel && isNight) {
+		push();
+		camera.focus();
+		noSmooth();
+		activeDialog.display();
+		pop();
+	}
+
 
 	ellipse(windowWidth/2, windowHeight/2, 4,4 );
 
@@ -181,7 +196,6 @@ function keyPressed() {
 
 		if(activeDialog.hasEnded) {
 			console.log("end");
-			player.canMove = true;
 			activeDialog = undefined;
 		}
 
@@ -248,24 +262,64 @@ function talkAboutFire() {
 	});
 
 	second.setCallback(() => {
-		campfire.texture = spriteHandler.getImage('campfire-lit');
-
-		player.setPos(campfire.pos.x - player.width, campfire.pos.y - campfire.height/2);
-		child.setPos(campfire.pos.x + campfire.width, campfire.pos.y - campfire.height/2);
-
-		child.isMirrored = true;
-		child.lead = undefined;
-		physicsHandler.addCollidable(child);
-
-		createNightImg();
-
-		camera.setTarget(campfire, true, true);
-		isEvening = false;
-		isNight = true;
-
-		player.texture = spriteHandler.getImage('fighter-buddy');
-		player.canMove = false;
+		console.log("--- starting the night --- ");
+		startNight();
 	});
+}
+
+function startNight() {
+
+	campfire.texture = spriteHandler.getImage('campfire-lit');
+
+	player.setPos(campfire.pos.x - player.width, campfire.pos.y - campfire.height/2);
+	child.setPos(campfire.pos.x + campfire.width, campfire.pos.y - campfire.height/2);
+
+	player.isMirrored = false;
+	child.isMirrored = true;
+	child.lead = undefined;
+	physicsHandler.addCollidable(child);
+
+	camera.setTarget(campfire, true, true);
+	isEvening = false;
+	isNight = true;
+
+	player.texture = spriteHandler.getImage('fighter-buddy');
+	player.canMove = false;
+
+	let buddyQuestion = new Dialog('Who is there? What do you want?', 2, 150);
+	buddyQuestion.placeAboveHead(player);
+
+	let monsterTalk = new Dialog('WE WANT THE CHILD!', 2, 150, 2);
+	monsterTalk.textColor = color(128, 0, 0);
+
+	monsterTalk.setCallback(() => {
+		player.canMove = true;
+		speed = 1.75;
+	});
+
+	buddyQuestion.setCallback(() => {
+		monsterTalk.placeAboveHead(talkingMonster);
+		activeDialog = monsterTalk;
+		camera.shake(10, 1500);
+	});
+
+	let talkingMonster = new Monster(spriteHandler.getImage('monster'), 0.125);
+
+	talkingMonster.setPos(0, campfire.pos.y);
+	talkingMonster.moveTo(player.pos.copy().sub(2*player.width, 0), 3000, callback => {
+		console.log("--- start talking ---");
+		player.isMirrored = true;
+		activeDialog = buddyQuestion;
+	});
+
+	monsters = [];
+	monsters.push(talkingMonster);
+}
+
+function signum(f) {
+	if (f > 0) return 1;
+	if (f < 0) return -1;
+	return 0;
 }
 
 function createNightImg() {
@@ -287,12 +341,6 @@ function createNightImg() {
 		}
 	}
 	nightShadow.updatePixels();
-}
-
-function signum(f) {
-	if (f > 0) return 1;
-	if (f < 0) return -1;
-	return 0;
 }
 
 function changeLevel() {

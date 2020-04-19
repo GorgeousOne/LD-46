@@ -33,14 +33,14 @@ class Collidable {
 
 		let intersection;
 
-		if(otherCollidable.isSolid) {
+		if(this.isSolid && otherCollidable.isSolid) {
 			let signX = signum(dx);
 			intersection = otherCollidable.hitbox.getBoundX(-signX) - this.hitbox.getBoundX(signX);
 			this.translateX(intersection);
 		}
 
-		this.onCollide();
-		otherCollidable.onCollide();
+		this.onCollide(otherCollidable);
+		otherCollidable.onCollide(this);
 
 		return dx + intersection;
 	}
@@ -61,14 +61,14 @@ class Collidable {
 
 		let intersection = 0;
 
-		if(otherCollidable.isSolid) {
+		if(this.isSolid && otherCollidable.isSolid) {
 			let signY = signum(dy);
 			intersection = otherCollidable.hitbox.getBoundY(-signY) - this.hitbox.getBoundY(signY);
 			this.translateY(intersection);
 		}
 
-		this.onCollide();
-		otherCollidable.onCollide();
+		this.onCollide(otherCollidable);
+		otherCollidable.onCollide(this);
 
 		return dy + intersection;
 	}
@@ -83,5 +83,5 @@ class Collidable {
 		this.hitbox.move(0, dy);
 	}
 
-	onCollide() {}
+	onCollide(otherCollidable) {}
 }
