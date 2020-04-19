@@ -1,14 +1,14 @@
-const thin = 0.8;
+const thin = 0.5;
 
 class Player extends Collidable {
 
 	constructor(texture, size) {
-		super(0, 0, texture.width*size*thin, texture.width*size*thin);
+		super(0, 0, texture.width*size*thin, texture.width*size);
 
+		this.texture = texture;
 		this.width = texture.width * size;
 		this.height = texture.height * size;
 
-		this.texture = texture;
 		this.canMove = true;
 		this.isMirrored = false;
 		this.size = size;
@@ -16,7 +16,7 @@ class Player extends Collidable {
 
 	setPos(x, y) {
 		this.pos.set(x, y);
-		this.hitbox.setPos(x - this.width/2 * thin, y);
+		this.hitbox.setPos(x - this.width/2 * thin, y + this.height/2 - this.width);
 	}
 
 	updateX() {

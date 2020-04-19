@@ -17,7 +17,7 @@ class MonsterWave {
 
 	start() {
 		this.startTime = Date.now();
-		this.lastSpawn = Date.now();
+		this.lastSpawn = Date.now() - this.startInterval;
 	}
 
 	run() {
@@ -49,20 +49,6 @@ class MonsterWave {
 		}
 	}
 
-	spawnMonster() {
-
-		let newMonster = new Monster(spriteHandler.getImage('monster'), 0.125);
-		physicsHandler.addCollidable(newMonster);
-
-		newMonster.setPos(600, 300);
-		newMonster.moveTo(child.pos, 3000, () => {
-			console.log("WE WON i am at " + newMonster.pos);
-		});
-
-		this.monsters.push(newMonster);
-		console.log("spawn")
-	}
-
 	removeMonster(monster) {
 
 		for(let i = 0; i < this.monsters.length; i++) {
@@ -71,5 +57,32 @@ class MonsterWave {
 				return;
 			}
 		}
+	}
+
+	spawnMonster() {
+
+		let newMonster = new Monster(spriteHandler.getImage('monster'), 0.125);
+		physicsHandler.addCollidable(newMonster);
+
+		let rndPos = this.getRndPos(350);
+
+		newMonster.setPos(rndPos.x, rndPos.y);
+		newMonster.moveTo(child.pos, 10000, () => {
+			resetNight();
+		});
+
+		this.monsters.push(newMonster);
+		console.log("spawn")
+	}
+
+	getRndPos(radius) {
+		let rndYaw = random(-PI, PI);
+		let rndVec = createVector(
+			cos(rndYaw),
+			sin(rndYaw)
+		);
+
+		rndVec.mult(radius);
+		return child.pos.copy().add(rndVec);
 	}
 }

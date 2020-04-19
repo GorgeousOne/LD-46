@@ -48,6 +48,7 @@ function preload() {
 	levels.push(loadStrings('levels/level1.txt'));
 	levels.push(loadStrings('levels/level2.txt'));
 	levels.push(loadStrings('levels/level3.txt'));
+	levels.push(loadStrings('levels/level4.txt'));
 }
 
 function setup() {
@@ -83,8 +84,9 @@ function setup() {
 
 	mapLeaveBlock = new Collidable(-10, 375, 10, 250);
 	nextLevelTrigger = new Collidable(1000, 375, 10, 250);
-	nextLevelTrigger.onCollide = function() {
-		changeLevel();
+	nextLevelTrigger.onCollide = function(otherCollidable) {
+		if(otherCollidable === player)
+			changeLevel();
 	};
 
 	physicsHandler.addCollidable(mapLeaveBlock);
@@ -124,7 +126,7 @@ function draw() {
 		rect(0, 0, width, height);
 
 	}else if(isNight) {
-		// image(nightShadow, 0, 0);
+		image(nightShadow, 0, 0);
 
 		if(talkingMonster) {
 			push();
@@ -186,6 +188,11 @@ let talkedToChild = false;
 let talkedToCampfire = false;
 
 function keyPressed() {
+
+	if(keyCode === UP_ARROW)
+		speed = 15.75;
+	if(keyCode === DOWN_ARROW)
+		speed = 1.75;
 
 	if (key !== 'e' && keyCode !== ENTER && key !== ' ')
 		return;
@@ -265,19 +272,19 @@ function talkAboutFire() {
 
 function startNight() {
 
-	campfire.texture = spriteHandler.getImage('campfire-lit');
+	isEvening = false;
+	isNight = true;
 
-	player.setPos(campfire.pos.x - player.width, campfire.pos.y - campfire.height/2);
-	child.setPos(campfire.pos.x + campfire.width, campfire.pos.y - campfire.height/2);
+	campfire.texture = spriteHandler.getImage('campfire-lit');
+	camera.setTarget(campfire, true, true);
+
+	player.setPos(600 - campfire.width, 490);
+	child.setPos(600 + campfire.width, 490);
 
 	player.isMirrored = false;
 	child.isMirrored = true;
 	child.lead = undefined;
 	physicsHandler.addCollidable(child);
-
-	camera.setTarget(campfire, true, true);
-	isEvening = false;
-	isNight = true;
 
 	player.texture = spriteHandler.getImage('fighter-buddy');
 	player.canMove = false;
@@ -301,7 +308,23 @@ function startNight() {
 		//2. let the monster answer
 		monsterTalk.placeAboveHead(talkingMonster);
 		activeDialog = monsterTalk;
-		camera.shake(10, 1500);
+		camera.shake(5, 1500);
+	});
+
+	let winMessage = new Dialog("Phew, That was close!", 2, 150);
+
+	monsterWave = new MonsterWave(1000, 1500, 680, () => {
+	// monsterWave = new MonsterWave(120000, 1500, 680, () => {
+		isNight = false;
+
+		activeDialog = winMessage;
+		winMessage.placeAboveHead(player);
+
+		player.setTexture(spriteHandler.getImage('buddy'));
+		camera.setTarget(player, true, true);
+		child.setPos(player.pos);
+		child.follow(player);
+		physicsHandler.removeCollidable(levelNotFinishedBlock);
 	});
 
 	monsterTalk.setCallback(() => {
@@ -309,20 +332,34 @@ function startNight() {
 		player.canMove = true;
 		speed = 1.75;
 
-		monsterWave = new MonsterWave(10000, 2000, 2000, () => {
-			console.log("OK its over");
-		});
-
 		physicsHandler.addCollidable(talkingMonster);
 		monsterWave.monsters.push(talkingMonster);
-		talkingMonster.moveTo(child.pos, 3000, () => {
-			console.log("WE WON");
-		});
 
+		talkingMonster.moveTo(child.pos, 3000, () => {
+			resetNight();
+		});
 
 		monsterWave.start();
 		talkingMonster = undefined;
 	});
+}
+
+function resetNight() {
+
+	monsterWave.monsters.forEach(monster => physicsHandler.removeCollidable(monster));
+	monsterWave = undefined;
+
+	let loseMessage =  new Dialog("The monsters got the child :(", 1, 600, 4);
+	loseMessage.isUiLevel = true;
+	loseMessage.setPos(
+		width/2 - loseMessage.width/2,
+		height/2 - loseMessage.height/2);
+
+	loseMessage.setCallback(() => {
+		startNight();
+	});
+
+	activeDialog = loseMessage;
 }
 
 function signum(f) {
@@ -333,20 +370,19 @@ function signum(f) {
 
 function createNightImg() {
 
-	let lightRadius = 250;
-
 	nightShadow = createGraphics(width, height);
 	nightShadow.background(0, 0, 10, 240);
 
+	let lightRadius = height/2;
 	let canvasMid = createVector(width/2, height/2);
 
 	for(let x = 0; x < width; x++) {
 		for(let y = 0; y < width; y++) {
 
-			let light = (canvasMid.dist(createVector(x, y)) / lightRadius);
+			let light = canvasMid.dist(createVector(x, y)) / lightRadius;
 
 			if(light < 1)
-				nightShadow.set(x, y, color(0, 0, 10, light * 240));
+				nightShadow.set(x, y, color(0, 0, 10, sin(light * HALF_PI) * 240 + random(-2, 2)));
 		}
 	}
 	nightShadow.updatePixels();
@@ -359,14 +395,14 @@ function changeLevel() {
 
 	switch (currentLevel) {
 		case 0:
-			player.setPos(250, 750);
+			player.setPos(400, 750);
 
-			let cryTrigger = new Collidable(825, 375, 10, 250);
+			let cryTrigger = new Collidable(925, 375, 10, 250);
 			physicsHandler.addCollidable(cryTrigger);
 
 			cryTrigger.onCollide = function() {
 
-				activeDialog = new Dialog("WAAAAAAH!", 1, 100, 7);
+				activeDialog = new Dialog("WAAAAAAH!", 1, 100, 3);
 				activeDialog.setPos(windowWidth - activeDialog.width - 25, windowHeight/2);
 				activeDialog.isUiLevel = true;
 
@@ -380,7 +416,7 @@ function changeLevel() {
 			child = new Child(spriteHandler.getImage('child-sobbing'), 0.125);
 
 			player.setPos(100, 500);
-			child.setPos(600, 501);
+			child.setPos(600, 500);
 
 			let lookAtChildTrigger = new Collidable(300, 375, 10, 250);
 			levelNotFinishedBlock = new Collidable(925, 375, 10, 250);
@@ -395,8 +431,8 @@ function changeLevel() {
 
 				player.canMove = false;
 				camera.setTarget(undefined);
-				camera.glideTo(createVector(child.pos.x, child.pos.y), 500, 500,callback => {
-				// camera.glideTo(createVector(child.pos.x, child.pos.y), 2000, 2000,callback => {
+				//camera.glideTo(createVector(child.pos.x, child.pos.y), 500, 500,callback => {
+				 camera.glideTo(createVector(child.pos.x, child.pos.y), 2000, 2000,callback => {
 					camera.setTarget(player, true, true);
 					player.canMove = true;
 				});
@@ -421,8 +457,20 @@ function changeLevel() {
 			child.leadPoints = [];
 
 			isEvening = true;
-			activeDialog = new Dialog('Mhh It\'s getting late already', 2, 150);
+			activeDialog = new Dialog('Mhh, It\'s getting late already. Let\'s find a place for the night', 2, 150);
 			activeDialog.placeAboveHead(player);
+
+			break;
+
+		case 3:
+
+			mapLeaveBlock.setPos(-10, 875);
+			physicsHandler.removeCollidable(nextLevelTrigger);
+			physicsHandler.removeCollidable(campfire);
+			campfire = undefined;
+
+			player.setPos(100, 700);
+			child.setPos(100, 700);
 
 			break;
 

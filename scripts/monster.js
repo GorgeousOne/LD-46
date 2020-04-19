@@ -72,8 +72,8 @@ class Monster extends Collidable {
 			if(monsterWave)
 				monsterWave.removeMonster(this);
 
+			camera.shake(3, 250);
 			this.moveVector = undefined;
-			console.log('im out');
 		}
 	}
 }

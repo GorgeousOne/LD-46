@@ -16,7 +16,7 @@ class Child extends Collidable{
 
 	setPos(x, y) {
 		this.pos.set(x, y);
-		this.hitbox.setPos(x - this.width/2 * thin, y);
+		this.hitbox.setPos(x - this.width/2 * thin, y + this.height/2 - this.width*thin);
 	}
 
 	setTexture(texture) {
@@ -24,7 +24,6 @@ class Child extends Collidable{
 	}
 
 	follow(player) {
-
 		this.lead = player;
 		physicsHandler.removeCollidable(this);
 	}
