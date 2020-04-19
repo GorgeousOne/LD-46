@@ -17,7 +17,8 @@ class Collidable {
 	}
 
 	updateX() {
-		this.moveX(this.velX);
+		if(this.velX !== 0)
+			this.moveX(this.velX);
 	}
 
 
@@ -45,7 +46,8 @@ class Collidable {
 	}
 
 	updateY() {
-		this.moveY(this.velY);
+		if(this.velY !== 0)
+			this.moveY(this.velY);
 	}
 
 	moveY(dy) {

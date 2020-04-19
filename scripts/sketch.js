@@ -20,6 +20,7 @@ function preload() {
 	spriteHandler = new SpriteHandler();
 	spriteHandler.loadImage('font', 'scripts/dialog/pixel-font.min.png');
 	spriteHandler.loadImage('buddy','assets/buddy2.png');
+	spriteHandler.loadImage('child-sobbing','assets/child-sobbing.png');
 	spriteHandler.loadImage('child','assets/child.png');
 
 	spriteHandler.loadImage('path', 'assets/path.png');
@@ -157,26 +158,36 @@ function keyPressed() {
 
 function firstTalk() {
 
-		player.isMirrored = player.pos.x > child.pos.x;
+	player.isMirrored = player.pos.x > child.pos.x;
 
-		activeDialog = new Dialog('Woah there, calm down! What are you doing here all alone?', 2,  250);
-		let second = new Dialog('Where are your parents?', 2, 150);
-		let third = new Dialog('I guess I cant just leave you here. Come on, lets go find your parents.', 2, 150);
+	activeDialog = new Dialog('Woah calm down!', 2,  150);
+	let second = new Dialog('What are you doing here all alone?', 2, 150);
+	let third = new Dialog('Where are your parents?', 2, 150);
+	let fourth = new Dialog('I guess I cant just leave you here. Come on, lets go find your parents.', 2, 150);
 
-		activeDialog.placeAboveHead(player);
-		second.placeAboveHead(player);
-		third.placeAboveHead(player);
+	activeDialog.placeAboveHead(player);
+	second.placeAboveHead(player);
+	third.placeAboveHead(player);
+	fourth.placeAboveHead(player);
 
-		activeDialog.setCallback(callback => {
-			player.isMirrored = !player.isMirrored;
-			activeDialog = second;
-		});
+	activeDialog.setCallback(() => {
+		child.setTexture(spriteHandler.getImage('child'))
+		activeDialog = second;
+	});
 
-		second.setCallback(callback => {
-			player.isMirrored = !player.isMirrored;
-			activeDialog = third;
-			child.follow(player);
-		});
+	second.setCallback(() => {
+		player.isMirrored = !player.isMirrored;
+		activeDialog = third;
+	});
+
+	third.setCallback(() => {
+		player.isMirrored = !player.isMirrored;
+		activeDialog = fourth;
+	});
+
+	fourth.setCallback(() => {
+		child.follow(player);
+	});
 }
 
 function signum(f) {
@@ -221,7 +232,7 @@ function changeLevel() {
 			player.setPos(100, 500);
 			stage.loadMap(levels[currentLevel]);
 
-			child = new Child(spriteHandler.getImage('child'), 0.125);
+			child = new Child(spriteHandler.getImage('child-sobbing'), 0.125);
 			child.setPos(600, 501);
 
 			let lookAtChildTrigger = new Collidable(300, 375, 10, 250);
@@ -234,7 +245,8 @@ function changeLevel() {
 
 				player.canMove = false;
 				camera.setTarget(undefined);
-				camera.glideTo(createVector(child.pos.x, child.pos.y), 2000, 2000,callback => {
+				camera.glideTo(createVector(child.pos.x, child.pos.y), 500, 500,callback => {
+				// camera.glideTo(createVector(child.pos.x, child.pos.y), 2000, 2000,callback => {
 					camera.setTarget(player, true, true);
 					player.canMove = true;
 				});

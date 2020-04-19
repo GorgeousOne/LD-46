@@ -10,26 +10,13 @@ class Child extends Collidable{
 		this.texture = texture;
 		this.isMirrored = false;
 		this.size = size;
+
+		this.leadPoints = [];
 	}
 
 	setPos(x, y) {
 		this.pos.set(x, y);
 		this.hitbox.setPos(x - this.width/2 * thin, y);
-	}
-
-	setDialog(dialog) {
-
-		let dialogPos = this.pos.copy().add(this.width/2, 0).sub(-this.width/2, -this.height);
-		dialog.setPos(dialogPos.x, dialogPos.y);
-
-		this.dialog = dialog;
-		this.wantsToTalk = true;
-	}
-
-	getDialog() {
-		this.wantsToTalk = false;
-		this.isTalking = true;
-		return this.dialog;
 	}
 
 	setTexture(texture) {
@@ -38,10 +25,15 @@ class Child extends Collidable{
 
 	follow(player) {
 
-		this.player = player;
+		this.lead = player;
+		physicsHandler.removeCollidable(this);
 	}
 
+
 	display() {
+
+		if(this.lead)
+			this.moveBehind();
 
 		push();
 		translate(this.pos.x, this.pos.y);
@@ -56,5 +48,24 @@ class Child extends Collidable{
 			scale(-1, 1);
 
 		pop();
+	}
+
+	moveBehind() {
+		let pos = player.pos.copy();
+
+		if (this.leadPoints.length === 0) {
+			this.leadPoints.push(pos);
+
+		} else {
+			let lastPos = this.leadPoints[this.leadPoints.length-1];
+			if(lastPos.dist(pos) > 0.1)
+				this.leadPoints.push(pos);
+		}
+
+		if(this.leadPoints.length > 15) {
+			let newPos = this.leadPoints[0];
+			this.setPos(newPos.x, newPos.y);
+			this.leadPoints.splice(0, 1);
+		}
 	}
 }
