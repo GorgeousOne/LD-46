@@ -12,6 +12,10 @@ class PhysicsHandler {
 	}
 
 	removeCollidable(collidable) {
+
+		if(!collidable)
+			throw 'collidable is undefined';
+
 		for(let i = 0; i < this.collidables.length; i++) {
 			if (this.collidables[i] === collidable) {
 				this.collidables.splice(i, 1);
@@ -23,6 +27,7 @@ class PhysicsHandler {
 	applyPhysics() {
 
 		for (let collidable of this.collidables) {
+
 			collidable.updateX();
 			collidable.updateY();
 		}

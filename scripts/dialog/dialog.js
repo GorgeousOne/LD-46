@@ -1,7 +1,7 @@
 
 class Dialog {
 
-	constructor(text, linesPerBubble = -1, width = 100, fontSize = 1) {
+	constructor(text, linesPerBubble = 1, width = 100, fontSize = 1) {
 
 		this.pos = createVector();
 		this.linesPerBubble = linesPerBubble;
@@ -29,29 +29,50 @@ class Dialog {
 		this.pos.set(x, y);
 	}
 
+	placeAboveHead(player) {
+		let newPos = player.pos.copy().sub(player.width/2, player.height/2);
+		newPos.sub(this.width/2, this.height);
+
+		console.log(this.height);
+
+		this.setPos(newPos.x, newPos.y);
+	}
+
 	reset() {
 		this.lineIterator = -this.linesPerBubble;
 		this.hasEnded = false;
 		this.loadNextBubble();
 	}
 
+	setCallback(callback) {
+		this.callback = callback;
+	}
+
 	loadNextBubble() {
 
 		let paragraphLines;
 
+		if(this.currentBubble && ((this.linesPerBubble < 1 || this.lineIterator >= this.textLines.length-1))) {
+
+			this.hasEnded = true;
+
+			if(this.callback)
+				this.callback();
+
+			return;
+		}
+
 		if(this.linesPerBubble < 1) {
 			paragraphLines = this.textLines;
-			this.hasEnded = true;
 
 		}else {
 			this.lineIterator += this.linesPerBubble;
-			let lastLine = this.lineIterator + this.linesPerBubble;
+			let lastLineInParagraph = this.lineIterator + this.linesPerBubble;
 
-			if(lastLine >= this.textLines.length) {
-				lastLine = min(lastLine, this.textLines.length);
-				this.hasEnded = true;
-			}
-			paragraphLines = this.textLines.slice(this.lineIterator, lastLine);
+			if(lastLineInParagraph >= this.textLines.length)
+				lastLineInParagraph = min(lastLineInParagraph, this.textLines.length);
+
+			paragraphLines = this.textLines.slice(this.lineIterator, lastLineInParagraph);
 		}
 
 		this.currentBubble = new TextBubble(paragraphLines, this.width, this.fontSize, this.textColor, this.bgColor, this.paddingX, this.paddingY, this.lineSpacing);
@@ -85,7 +106,6 @@ class Dialog {
 
 			let lastIndex = lines.length - 1;
 			lines[lastIndex] = lines[lastIndex] + word + ' ';
-			//add the length of the word plus that one pixel that will be added between the words
 			lineWidth += wordWidth + this.fontSize;
 		}
 

@@ -2,13 +2,13 @@ const thin = 0.8;
 
 class Player extends Collidable {
 
-	constructor(sprite, size) {
-		super(0, 0, sprite.width*size*thin, sprite.width*size*thin);
+	constructor(texture, size) {
+		super(0, 0, texture.width*size*thin, texture.width*size*thin);
 
-		this.width = sprite.width * size;
-		this.height = sprite.height * size;
+		this.width = texture.width * size;
+		this.height = texture.height * size;
 
-		this.sprite = sprite;
+		this.texture = texture;
 		this.canMove = true;
 		this.isMirrored = false;
 		this.size = size;
@@ -29,7 +29,7 @@ class Player extends Collidable {
 
 	display() {
 
-		if (!this.sprite)
+		if (!this.texture)
 			return;
 
 		push();
@@ -39,9 +39,9 @@ class Player extends Collidable {
 		if (this.isMirrored)
 			scale(-1, 1);
 
-		// let tex = this.sprite.getFrame(this.isWalking ? Date.now() - startTime : 0);
+		// let tex = this.texture.getFrame(this.isWalking ? Date.now() - startTime : 0);
 
-		image(this.sprite, -this.sprite.width/2, -this.sprite.height/2);
+		image(this.texture, -this.texture.width/2, -this.texture.height/2);
 
 		if (this.isMirrored)
 			scale(-1, 1);

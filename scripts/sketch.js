@@ -88,15 +88,17 @@ function draw() {
 	physicsHandler.collidables.forEach(collidable => collidable.hitbox.display());
 
 	smooth();
-	player.display();
-
 	if(child)
 		child.display();
+	player.display();
+
 
 	if(activeDialog && !activeDialog.isUiLevel)
 		activeDialog.display();
 
 	pop();
+
+	ellipse(windowWidth/2, windowHeight/2, 4,4 );
 
 	if(activeDialog && activeDialog.isUiLevel)
 		activeDialog.display();
@@ -131,12 +133,12 @@ function movePlayer() {
 
 function keyPressed() {
 
-	if (key !== 'e')
+	if (key !== 'e' && keyCode !== ENTER && key !== ' ')
 		return;
 
 	if (activeDialog) {
 
-		console.log("next bubble")
+		console.log("next bubble");
 		activeDialog.loadNextBubble();
 
 		if(activeDialog.hasEnded) {
@@ -144,7 +146,37 @@ function keyPressed() {
 			player.canMove = true;
 			activeDialog = undefined;
 		}
+
+		return;
 	}
+
+	if (child && !child.player && player.pos.dist(child.pos) < player.width*2) {
+		firstTalk();
+	}
+}
+
+function firstTalk() {
+
+		player.isMirrored = player.pos.x > child.pos.x;
+
+		activeDialog = new Dialog('Woah there, calm down! What are you doing here all alone?', 2,  250);
+		let second = new Dialog('Where are your parents?', 2, 150);
+		let third = new Dialog('I guess I cant just leave you here. Come on, lets go find your parents.', 2, 150);
+
+		activeDialog.placeAboveHead(player);
+		second.placeAboveHead(player);
+		third.placeAboveHead(player);
+
+		activeDialog.setCallback(callback => {
+			player.isMirrored = !player.isMirrored;
+			activeDialog = second;
+		});
+
+		second.setCallback(callback => {
+			player.isMirrored = !player.isMirrored;
+			activeDialog = third;
+			child.follow(player);
+		});
 }
 
 function signum(f) {
@@ -168,19 +200,18 @@ function changeLevel() {
 			physicsHandler.addCollidable(nextLevelTrigger);
 
 			cryTrigger.onCollide = function() {
-				physicsHandler.removeCollidable(cryTrigger);
 
 				activeDialog = new Dialog("WAAAAAAH!", 1, 100, 7);
 				activeDialog.setPos(windowWidth - activeDialog.width - 25, windowHeight/2);
 				activeDialog.isUiLevel = true;
 
+				physicsHandler.removeCollidable(cryTrigger);
 				camera.shake(5, 1000);
 			};
 
 			nextLevelTrigger.onCollide = function() {
-				physicsHandler.removeCollidable(nextLevelTrigger);
-				nextLevelTrigger.onCollide = function () {};
 				changeLevel();
+				physicsHandler.removeCollidable(nextLevelTrigger);
 			};
 
 			stage.loadMap(levels[currentLevel]);
@@ -191,9 +222,10 @@ function changeLevel() {
 			stage.loadMap(levels[currentLevel]);
 
 			child = new Child(spriteHandler.getImage('child'), 0.125);
-			child.setPos(600, 500);
+			child.setPos(600, 501);
 
 			let lookAtChildTrigger = new Collidable(300, 375, 10, 250);
+			physicsHandler.addCollidable(child);
 			physicsHandler.addCollidable(lookAtChildTrigger);
 
 			lookAtChildTrigger.onCollide = function() {
