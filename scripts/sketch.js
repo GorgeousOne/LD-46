@@ -1,13 +1,14 @@
 new p5();
 
-let spriteHandler;
+const startTime = Date.now();
 
-let player;
-let stage;
+let spriteHandler;
 let physicsHandler;
 let camera;
 
-const startTime = Date.now();
+let player;
+let child;
+let stage;
 
 let levels;
 let currentLevel;
@@ -19,6 +20,7 @@ function preload() {
 	spriteHandler = new SpriteHandler();
 	spriteHandler.loadImage('font', 'scripts/dialog/pixel-font.min.png');
 	spriteHandler.loadImage('buddy','assets/buddy2.png');
+	spriteHandler.loadImage('child','assets/child.png');
 
 	spriteHandler.loadImage('path', 'assets/path.png');
 	spriteHandler.loadImage('forest', 'assets/forest-tiles.png');
@@ -69,9 +71,6 @@ function drawTime() {
 
 	fill(0, 0, 10, 200);
 	rect(0, 0, windowWidth, windowHeight);
-
-	fill()
-	ellipse(windowWidth/2, windowHeight/2, 200, 200);
 }
 
 function draw() {
@@ -90,6 +89,9 @@ function draw() {
 
 	smooth();
 	player.display();
+
+	if(child)
+		child.display();
 
 	if(activeDialog && !activeDialog.isUiLevel)
 		activeDialog.display();
@@ -159,8 +161,8 @@ function changeLevel() {
 		case 0:
 			player.setPos(250, 750);
 
-			let cryTrigger = new Collidable(825, 400, 10, 200);
-			let nextLevelTrigger = new Collidable(1000, 400, 10, 200);
+			let cryTrigger = new Collidable(825, 375, 10, 250);
+			let nextLevelTrigger = new Collidable(1000, 375, 10, 250);
 
 			physicsHandler.addCollidable(cryTrigger);
 			physicsHandler.addCollidable(nextLevelTrigger);
@@ -188,7 +190,10 @@ function changeLevel() {
 			player.setPos(100, 500);
 			stage.loadMap(levels[currentLevel]);
 
-			let lookAtChildTrigger = new Collidable(300, 400, 10, 200);
+			child = new Child(spriteHandler.getImage('child'), 0.125);
+			child.setPos(600, 500);
+
+			let lookAtChildTrigger = new Collidable(300, 375, 10, 250);
 			physicsHandler.addCollidable(lookAtChildTrigger);
 
 			lookAtChildTrigger.onCollide = function() {
@@ -197,7 +202,7 @@ function changeLevel() {
 
 				player.canMove = false;
 				camera.setTarget(undefined);
-				camera.glideTo(createVector(500, 500), 2000, callback => {
+				camera.glideTo(createVector(child.pos.x, child.pos.y), 2000, 2000,callback => {
 					camera.setTarget(player, true, true);
 					player.canMove = true;
 				});

@@ -20,11 +20,12 @@ class Camera {
 		this.focusOffset.set(relX, relY)
 	}
 
-	glideTo(pos, duration, callback) {
+	glideTo(pos, duration, idleDuration, callback) {
 
 		this.glideOrigin = this.pos.copy();
 		this.glideVector = pos.sub(this.glideOrigin);
 		this.glideDuration = duration;
+		this.idleDuration = idleDuration;
 		this.glideCallback = callback;
 		this.glideStart = Date.now();
 	}
@@ -62,13 +63,13 @@ class Camera {
 
 		let timeSinceStart = Date.now() - this.glideStart;
 
-		if(timeSinceStart > this.glideDuration) {
+		if(timeSinceStart > this.glideDuration + this.idleDuration) {
 			this.glideVector = undefined;
 			this.glideCallback();
 			return;
 		}
 
-		let currentOffset = timeSinceStart / this.glideDuration;
+		let currentOffset = constrain(timeSinceStart / this.glideDuration, 0, 1);
 		let offset = this.glideVector.copy().mult(currentOffset);
 
 		let currentPos = this.glideOrigin.copy().add(offset);
