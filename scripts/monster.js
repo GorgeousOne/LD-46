@@ -11,7 +11,7 @@ class Monster extends Collidable {
 		this.size = size;
 
 		this.isSolid = false;
-		this.isAlvie = true;
+		this.isAlive = true;
 	}
 
 	setPos(x, y) {
@@ -21,13 +21,16 @@ class Monster extends Collidable {
 
 	moveTo(pos, duration, callback) {
 		this.moveOrigin = this.pos.copy();
-		this.moveVector = pos.sub(this.moveOrigin);
+		this.moveVector = pos.copy().sub(this.moveOrigin);
 		this.moveDuration = duration;
 		this.moveCallback = callback;
 		this.moveStart = Date.now();
 	}
 
 	display() {
+
+		if(!this.isAlive)
+			return;
 
 		if(this.moveVector)
 			this.applyMovement();
@@ -53,7 +56,7 @@ class Monster extends Collidable {
 			return;
 		}
 
-		let currentOffset = constrain(timeSinceStart / this.moveDuration, 0, 1);
+		let currentOffset = timeSinceStart / this.moveDuration;
 		let offset = this.moveVector.copy().mult(currentOffset);
 		let newPos = this.moveOrigin.copy().add(offset);
 
@@ -65,6 +68,12 @@ class Monster extends Collidable {
 
 		if(otherCollidable === player) {
 			physicsHandler.removeCollidable(this);
+
+			if(monsterWave)
+				monsterWave.removeMonster(this);
+
+			this.moveVector = undefined;
+			console.log('im out');
 		}
 	}
 }
