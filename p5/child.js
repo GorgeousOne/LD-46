@@ -1,7 +1,8 @@
 
-class Child {
+class Child extends Collidable{
 
 	constructor(texture) {
+		super(0, 0, texture.width)
 		this.texture = texture;
 	}
 
@@ -9,5 +10,8 @@ class Child {
 		this.texture = texture;
 	}
 
+	display() {
 
+
+	}
 }

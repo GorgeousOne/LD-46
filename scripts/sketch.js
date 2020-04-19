@@ -9,10 +9,10 @@ let camera;
 
 const startTime = Date.now();
 
-let level1;
-let activeDialog;
+let levels;
+let currentLevel;
 
-let cryTrigger;
+let activeDialog;
 
 function preload() {
 
@@ -23,7 +23,10 @@ function preload() {
 	spriteHandler.loadImage('path', 'assets/path.png');
 	spriteHandler.loadImage('forest', 'assets/forest-tiles.png');
 
-	level1 = loadStrings('levels/level1.txt');
+	levels = [];
+
+	levels.push(loadStrings('levels/level1.txt'));
+	levels.push(loadStrings('levels/level2.txt'))
 }
 
 function setup() {
@@ -36,16 +39,14 @@ function setup() {
 	physicsHandler = new PhysicsHandler();
 
 	player = new Player(spriteHandler.getImage('buddy'), 0.125);
-	player.setPos(250, 750);
 	physicsHandler.addCollidable(player);
 
-	camera = new Camera(player);
-	camera.followTargetX = true;
-	camera.followTargetY = true;
+	camera = new Camera();
+	camera.setTarget(player, true, true);
 	camera.zoom = 3;
 
 	let forest = spriteHandler.getImage('forest');
-	stage = new Stage(level1, 100);
+	stage = new Stage(100);
 	stage.addTex(TileType.PATH, spriteHandler.getImage('path'));
 	stage.addTex(TileType.FOREST_BACK_LEFT, forest.get(0, 0, 100, 100), new Hitbox(25, 25, 75, 75));
 	stage.addTex(TileType.FOREST_BACK_MID, forest.get(100, 0, 100, 100), new Hitbox(0, 25, 100, 75));
@@ -56,19 +57,9 @@ function setup() {
 	stage.addTex(TileType.FOREST_FRONT_LEFT, forest.get(0, 200, 100, 100), new Hitbox(25, 0, 75, 75));
 	stage.addTex(TileType.FOREST_FRONT_MID, forest.get(100, 200, 100, 100), new Hitbox(0, 0, 100, 75));
 	stage.addTex(TileType.FOREST_FRONT_RIGHT, forest.get(200, 200, 100, 100), new Hitbox(0, 0, 75, 75));
-	stage.loadHitboxes();
 
-	cryTrigger = new Collidable(800, 400, 10, 200);
-
-	cryTrigger.onCollide = function () {
-		activeDialog = new Dialog("WAAAAAAH!", 1, 100, 2);
-		activeDialog.setPos(880, 500);
-		console.log(activeDialog.pos)
-		console.log(activeDialog.currentBubble.width);
-		physicsHandler.removeCollidable(cryTrigger);
-	};
-
-	physicsHandler.addCollidable(cryTrigger);
+	currentLevel = -1;
+	changeLevel();
 }
 
 function drawTime() {
@@ -76,7 +67,6 @@ function drawTime() {
 	if(keyIsDown(32))
 		return;
 
-	//fill(255, 100, 0, 32);
 	fill(0, 0, 10, 200);
 	rect(0, 0, windowWidth, windowHeight);
 
@@ -108,35 +98,15 @@ function draw() {
 
 	if(activeDialog && activeDialog.isUiLevel)
 		activeDialog.display();
-		// activeDialog.display(700, 700);
-
-	// if (npcTalkingTo && !npcTalkingTo.hitbox.intersects(player.hitbox)) {
-	// 	npcTalkingTo.stopTalking();
-	// 	npcTalkingTo = undefined;
-	// }
 }
 
 function windowResized() {
 	resizeCanvas(windowWidth, windowHeight);
 }
 
-function signum(f) {
-	if (f > 0) return 1;
-	if (f < 0) return -1;
-	return 0;
-}
-
-function mouseClicked() {
-	// ui.onMouseClick();
-}
-
-function mouseMoved() {
-	// ui.onMouseMove();
-}
-
 function movePlayer() {
 
-	if(activeDialog)
+	if(!player.canMove || activeDialog)
 		return;
 
 	if (keyIsDown(65) || keyIsDown(LEFT_ARROW))
@@ -169,12 +139,74 @@ function keyPressed() {
 
 		if(activeDialog.hasEnded) {
 			console.log("end");
+			player.canMove = true;
 			activeDialog = undefined;
 		}
 	}
 }
 
+function signum(f) {
+	if (f > 0) return 1;
+	if (f < 0) return -1;
+	return 0;
+}
+
 function changeLevel() {
 
+	currentLevel++;
 
+	switch (currentLevel) {
+		case 0:
+			player.setPos(250, 750);
+
+			let cryTrigger = new Collidable(825, 400, 10, 200);
+			let nextLevelTrigger = new Collidable(1000, 400, 10, 200);
+
+			physicsHandler.addCollidable(cryTrigger);
+			physicsHandler.addCollidable(nextLevelTrigger);
+
+			cryTrigger.onCollide = function() {
+				physicsHandler.removeCollidable(cryTrigger);
+
+				activeDialog = new Dialog("WAAAAAAH!", 1, 100, 7);
+				activeDialog.setPos(windowWidth - activeDialog.width - 25, windowHeight/2);
+				activeDialog.isUiLevel = true;
+
+				camera.shake(5, 1000);
+			};
+
+			nextLevelTrigger.onCollide = function() {
+				physicsHandler.removeCollidable(nextLevelTrigger);
+				nextLevelTrigger.onCollide = function () {};
+				changeLevel();
+			};
+
+			stage.loadMap(levels[currentLevel]);
+			break;
+
+		case 1:
+			player.setPos(100, 500);
+			stage.loadMap(levels[currentLevel]);
+
+			let lookAtChildTrigger = new Collidable(300, 400, 10, 200);
+			physicsHandler.addCollidable(lookAtChildTrigger);
+
+			lookAtChildTrigger.onCollide = function() {
+
+				physicsHandler.removeCollidable(lookAtChildTrigger);
+
+				player.canMove = false;
+				camera.setTarget(undefined);
+				camera.glideTo(createVector(500, 500), 2000, callback => {
+					camera.setTarget(player, true, true);
+					player.canMove = true;
+				});
+			};
+
+			break;
+
+		default:
+			console.log("what level is this?");
+			break;
+	}
 }

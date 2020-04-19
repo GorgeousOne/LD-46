@@ -1,5 +1,5 @@
 // const speed = 1.75;
-const speed = 5.75;
+const speed = 10.75;
 
 class PhysicsHandler {
 

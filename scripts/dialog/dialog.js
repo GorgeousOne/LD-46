@@ -61,7 +61,6 @@ class Dialog {
 
 		push();
 		noSmooth();
-		//translate(this.pos.x, this.pos.y);
 		this.currentBubble.display(this.pos.x, this.pos.y);
 		pop();
 	}

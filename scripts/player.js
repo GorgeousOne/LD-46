@@ -9,8 +9,7 @@ class Player extends Collidable {
 		this.height = sprite.height * size;
 
 		this.sprite = sprite;
-		this.isWalking = false;
-		this.isTalking = false;
+		this.canMove = true;
 		this.isMirrored = false;
 		this.size = size;
 	}
@@ -21,6 +20,7 @@ class Player extends Collidable {
 	}
 
 	updateX() {
+
 		if(this.velX !== 0)
 			this.isMirrored = this.velX < 0;
 

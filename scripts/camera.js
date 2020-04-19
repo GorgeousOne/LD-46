@@ -1,14 +1,8 @@
 class Camera {
 
-	constructor(target) {
-		this.target = target;
-
+	constructor() {
 		this.pos = createVector();
 		this.focusOffset = createVector();
-
-		this.followTargetX = false;
-		this.followTargetY = false;
-
 		this.zoom = 1;
 	}
 
@@ -16,8 +10,23 @@ class Camera {
 		this.pos.set(x, y);
 	}
 
+	setTarget(target, followX, followY) {
+		this.target = target;
+		this.followTargetX = followX;
+		this.followTargetY = followY;
+	}
+
 	setOffset(relX, relY) {
 		this.focusOffset.set(relX, relY)
+	}
+
+	glideTo(pos, duration, callback) {
+
+		this.glideOrigin = this.pos.copy();
+		this.glideVector = pos.sub(this.glideOrigin);
+		this.glideDuration = duration;
+		this.glideCallback = callback;
+		this.glideStart = Date.now();
 	}
 
 	shake(strength, duration) {
@@ -41,8 +50,29 @@ class Camera {
 		scale(this.zoom);
 		translate(-this.pos.x, -this.pos.y);
 
+		if(this.glideVector)
+			this.applyGlide();
+
+
 		if(this.isShaking)
 			this.applyShake();
+	}
+
+	applyGlide() {
+
+		let timeSinceStart = Date.now() - this.glideStart;
+
+		if(timeSinceStart > this.glideDuration) {
+			this.glideVector = undefined;
+			this.glideCallback();
+			return;
+		}
+
+		let currentOffset = timeSinceStart / this.glideDuration;
+		let offset = this.glideVector.copy().mult(currentOffset);
+
+		let currentPos = this.glideOrigin.copy().add(offset);
+		this.setPos(currentPos.x, currentPos.y);
 	}
 
 	applyShake() {
