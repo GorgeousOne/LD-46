@@ -50,7 +50,6 @@ class Dialog {
 		let paragraphLines;
 
 		if(this.currentBubble && this.lineIterator >= this.textLines.length) {
-			console.log(this.lineIterator + " is greater than " + this.linesPerBubble);
 			this.hasEnded = true;
 
 			if(this.callback)
@@ -65,9 +64,7 @@ class Dialog {
 			lastLineInParagraph = min(lastLineInParagraph, this.textLines.length);
 
 		paragraphLines = this.textLines.slice(this.lineIterator, lastLineInParagraph);
-		console.log(this.lineIterator + " - " + lastLineInParagraph + ": " + paragraphLines);
 		this.lineIterator = lastLineInParagraph;
-
 		this.currentBubble = new TextBubble(paragraphLines, this.width, this.fontSize, this.textColor, this.bgColor, this.paddingX, this.paddingY, this.lineSpacing);
 	}
 

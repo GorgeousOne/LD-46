@@ -20,7 +20,6 @@ class Player extends Collidable {
 	}
 
 	updateX() {
-
 		if(this.velX !== 0)
 			this.isMirrored = this.velX < 0;
 

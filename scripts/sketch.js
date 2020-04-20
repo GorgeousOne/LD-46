@@ -27,6 +27,8 @@ let nightShadow;
 let talkingMonster;
 let monsterWave;
 
+let house;
+
 function preload() {
 
 	spriteHandler = new SpriteHandler();
@@ -36,13 +38,17 @@ function preload() {
 	spriteHandler.loadImage('fighter-buddy','assets/fighter-buddy.png');
 	spriteHandler.loadImage('child','assets/child.png');
 	spriteHandler.loadImage('child-sobbing','assets/child-sobbing.png');
+	spriteHandler.loadImage('child-side','assets/child-sidewards.png');
+	spriteHandler.loadImage('child-hugging','assets/child-hugging.png');
 
 	spriteHandler.loadImage('path', 'assets/path.png');
 	spriteHandler.loadImage('forest', 'assets/forest-tiles.png');
+	spriteHandler.loadImage('house','assets/house.png');
 
 	spriteHandler.loadImage('campfire','assets/campfire.png');
 	spriteHandler.loadImage('campfire-lit','assets/campfire-lit.png');
 	spriteHandler.loadImage('monster','assets/monster.png');
+
 
 	levels = [];
 	levels.push(loadStrings('levels/level1.txt'));
@@ -108,13 +114,27 @@ function draw() {
 
 	noSmooth();
 	stage.display();
-	physicsHandler.collidables.forEach(collidable => collidable.hitbox.display());
+	// physicsHandler.collidables.forEach(collidable => collidable.hitbox.display());
 
 	smooth();
 	if(campfire) campfire.display();
-	if(child) child.display();
-	player.display();
 
+	if(currentLevel === 3) {
+		player.display();
+		child.display();
+		house.display();
+	}else {
+		if(child) child.display();
+		player.display();
+	}
+
+	if(talkingMonster) {
+		talkingMonster.display();
+
+	}else if(monsterWave) {
+		monsterWave.run();
+		monsterWave.monsters.forEach(monster => monster.display());
+	}
 
 	if(activeDialog && !activeDialog.isUiLevel && !isNight)
 		activeDialog.display();
@@ -127,23 +147,6 @@ function draw() {
 
 	}else if(isNight) {
 		image(nightShadow, 0, 0);
-
-		if(talkingMonster) {
-			push();
-			camera.focus();
-			talkingMonster.display();
-			pop();
-		}
-
-		if(monsterWave) {
-			monsterWave.run();
-
-			push();
-			camera.focus();
-			monsterWave.monsters.forEach(monster => monster.display());
-			pop();
-		}
-
 	}
 
 	if(activeDialog && !activeDialog.isUiLevel && isNight) {
@@ -153,9 +156,6 @@ function draw() {
 		activeDialog.display();
 		pop();
 	}
-
-
-	ellipse(windowWidth/2, windowHeight/2, 4,4 );
 
 	if(activeDialog && activeDialog.isUiLevel)
 		activeDialog.display();
@@ -188,11 +188,6 @@ let talkedToChild = false;
 let talkedToCampfire = false;
 
 function keyPressed() {
-
-	if(keyCode === UP_ARROW)
-		speed = 15.75;
-	if(keyCode === DOWN_ARROW)
-		speed = 1.75;
 
 	if (key !== 'e' && keyCode !== ENTER && key !== ' ')
 		return;
@@ -231,7 +226,7 @@ function talkTolChild() {
 	fourth.placeAboveHead(player);
 
 	activeDialog.setCallback(() => {
-		child.setTexture(spriteHandler.getImage('child'))
+		child.setTexture(spriteHandler.getImage('child'));
 		activeDialog = second;
 	});
 
@@ -278,14 +273,15 @@ function startNight() {
 	campfire.texture = spriteHandler.getImage('campfire-lit');
 	camera.setTarget(campfire, true, true);
 
-	player.setPos(600 - campfire.width, 490);
-	child.setPos(600 + campfire.width, 490);
+	player.setPos(550 - campfire.width, 390);
+	child.setPos(550 + campfire.width, 390);
 
 	player.isMirrored = false;
 	child.isMirrored = true;
 	child.lead = undefined;
 	physicsHandler.addCollidable(child);
 
+	child.setTexture(spriteHandler.getImage('child-side'));
 	player.texture = spriteHandler.getImage('fighter-buddy');
 	player.canMove = false;
 
@@ -298,7 +294,8 @@ function startNight() {
 	talkingMonster = new Monster(spriteHandler.getImage('monster'), 0.125);
 	talkingMonster.setPos(0, campfire.pos.y);
 
-	talkingMonster.moveTo(player.pos.copy().sub(2*player.width, 0), 3000, () => {
+	// talkingMonster.moveTo(player.pos.copy().sub(2*player.width, 0), 100, () => {
+	talkingMonster.moveTo(player.pos.copy().sub(2*player.width, 0), 5000, () => {
 		//1. move towards the player and let him ask
 		player.isMirrored = true;
 		activeDialog = buddyQuestion;
@@ -313,24 +310,26 @@ function startNight() {
 
 	let winMessage = new Dialog("Phew, That was close!", 2, 150);
 
-	monsterWave = new MonsterWave(1000, 1500, 680, () => {
-	// monsterWave = new MonsterWave(120000, 1500, 680, () => {
+	// monsterWave = new MonsterWave(0, 1500, 680, () => {
+	monsterWave = new MonsterWave(120000, 2000, 500, () => {
 		isNight = false;
 
 		activeDialog = winMessage;
 		winMessage.placeAboveHead(player);
 
-		player.setTexture(spriteHandler.getImage('buddy'));
+		player.texture = spriteHandler.getImage('buddy');
 		camera.setTarget(player, true, true);
 		child.setPos(player.pos);
 		child.follow(player);
+
 		physicsHandler.removeCollidable(levelNotFinishedBlock);
+		physicsHandler.removeCollidable(child);
 	});
 
 	monsterTalk.setCallback(() => {
 		//3. start the wave of monsters
 		player.canMove = true;
-		speed = 1.75;
+		child.setTexture(spriteHandler.getImage('child'));
 
 		physicsHandler.addCollidable(talkingMonster);
 		monsterWave.monsters.push(talkingMonster);
@@ -431,8 +430,7 @@ function changeLevel() {
 
 				player.canMove = false;
 				camera.setTarget(undefined);
-				//camera.glideTo(createVector(child.pos.x, child.pos.y), 500, 500,callback => {
-				 camera.glideTo(createVector(child.pos.x, child.pos.y), 2000, 2000,callback => {
+				camera.glideTo(createVector(child.pos.x, child.pos.y), 2000, 2000,callback => {
 					camera.setTarget(player, true, true);
 					player.canMove = true;
 				});
@@ -443,11 +441,11 @@ function changeLevel() {
 		case 2:
 
 			campfire = new Campfire(spriteHandler.getImage('campfire'), 0.125);
-			campfire.setPos(600, 500);
+			campfire.setPos(550, 400);
 
 			mapLeaveBlock.setPos(-10, 175);
-			nextLevelTrigger.setPos(1000, 575);
-			levelNotFinishedBlock.setPos(925, 575);
+			nextLevelTrigger.setPos(900, 375);
+			levelNotFinishedBlock.setPos(825, 375);
 
 			physicsHandler.addCollidable(campfire);
 			physicsHandler.addCollidable(levelNotFinishedBlock);
@@ -457,20 +455,78 @@ function changeLevel() {
 			child.leadPoints = [];
 
 			isEvening = true;
-			activeDialog = new Dialog('Mhh, It\'s getting late already. Let\'s find a place for the night', 2, 150);
+			activeDialog = new Dialog('Mhh, It\'s getting late already. Let\'s try to find a place for the night.', 2, 150);
 			activeDialog.placeAboveHead(player);
 
 			break;
 
 		case 3:
 
+			house = new House(createVector(600, 350), spriteHandler.getImage('house'), 0.5);
+
 			mapLeaveBlock.setPos(-10, 875);
 			physicsHandler.removeCollidable(nextLevelTrigger);
 			physicsHandler.removeCollidable(campfire);
 			campfire = undefined;
 
-			player.setPos(100, 700);
-			child.setPos(100, 700);
+
+			player.setPos(100, 500);
+			child.setPos(200, 550);
+			player.isSolid = false;
+			child.lead = undefined;
+
+			let homeSweetHome = new Dialog('Oh, look. We weren\'t so far awy from your home all along.', 2, 150);
+			let goodBye = new Dialog('I guess from here you will find your way. Good luck!', 2, 150);
+			let theEnd = new Dialog('The End!', 2, 600, 10);
+
+			theEnd.textColor = color(255, 150, 150);
+			theEnd.isUiLevel = true;
+			theEnd.setPos(
+				width/2 - theEnd.width/2,
+				height/2 - theEnd.height/2);
+
+			let lookAtHouseTrigger = new Collidable(275, 375, 10, 250);
+			physicsHandler.addCollidable(lookAtHouseTrigger);
+
+			lookAtHouseTrigger.onCollide = function () {
+				//1. talk about house
+				player.canMove = false;
+				homeSweetHome.placeAboveHead(player);
+				activeDialog = homeSweetHome;
+				physicsHandler.removeCollidable(lookAtHouseTrigger);
+			};
+
+			homeSweetHome.setCallback(() => {
+				//2. look at house
+				camera.target = undefined;
+				camera.glideTo(house.pos, 2000, 2000, () => {
+
+					camera.setTarget(child, true, true)
+					child.setPos(player.pos.x + player.width, player.pos.y);
+					child.isMirrored = true;
+
+					activeDialog = goodBye;
+					goodBye.placeAboveHead(player);
+					activeDialog = goodBye;
+				});
+			});
+
+			goodBye.setCallback(() => {
+				//3. let the child hug you
+				child.moveTo(player.pos.copy().add(3, 0), 250, () => {
+
+					child.setTexture(spriteHandler.getImage('child-hugging'));
+					//4. the child runs to the house
+					camera.glideTo(player.pos, 0, 500, () => {
+
+						child.isMirrored = false;
+						child.setTexture(spriteHandler.getImage('child-side'));
+						child.moveTo(house.pos, 2000, () => {
+							activeDialog = theEnd;
+						});
+					});
+				})
+			});
 
 			break;
 

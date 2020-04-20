@@ -23,7 +23,7 @@ class Camera {
 	glideTo(pos, duration, idleDuration, callback) {
 
 		this.glideOrigin = this.pos.copy();
-		this.glideVector = pos.sub(this.glideOrigin);
+		this.glideVector = pos.copy().sub(this.glideOrigin);
 		this.glideDuration = duration;
 		this.idleDuration = idleDuration;
 		this.glideCallback = callback;
