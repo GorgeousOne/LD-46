@@ -25,7 +25,6 @@ class MonsterWave {
 			return;
 
 		if(this.spawningEnded && !this.allMonstersKilled && this.monsters.length === 0) {
-			console.log(this.monsters.length + " monsters left");
 			this.callback();
 			this.allMonstersKilled = true;
 		}
@@ -72,7 +71,6 @@ class MonsterWave {
 		});
 
 		this.monsters.push(newMonster);
-		console.log("spawn")
 	}
 
 	getRndPos(radius) {
